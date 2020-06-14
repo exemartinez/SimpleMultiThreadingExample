@@ -1,10 +1,10 @@
 package com.foodfactory.builders;
 
-import com.foodfactory.model.Store;
+import com.foodfactory.model.StoreImpl;
 
 /**
  * We dettach the way we build the stores from the store itself. I do not know
- * if I may change the very nature of what a Store is later.
+ * if I may change the very nature of what a StoreImpl is later.
  */
 public class StoreBuilder {
 
@@ -19,8 +19,8 @@ public class StoreBuilder {
         return storeBuilder;
     }
 
-    public Store build(Integer size) {
-        Store store = new Store(size);
+    public StoreImpl build(Integer size) {
+        StoreImpl store = new StoreImpl(size);
         return store;
     }
 }

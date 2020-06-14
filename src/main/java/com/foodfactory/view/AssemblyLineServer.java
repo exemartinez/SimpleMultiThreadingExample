@@ -1,7 +1,8 @@
 package com.foodfactory.view;
 
+import com.foodfactory.exceptions.KitchenRequiredException;
 import com.foodfactory.model.AssemblyLine;
-import com.foodfactory.model.Kitchen;
+import com.foodfactory.controllers.Kitchen;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -17,19 +18,26 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class AssemblyLineServer {
 
     private final List<AssemblyLine> assemblyLines; //This is not how the request will be implemented in a real app!
-
     private LocalDateTime startDateTime;
-
     private final Kitchen kitchen;
-
     private volatile boolean endProgram = false;
 
-    public AssemblyLineServer(Kitchen kitchen) {
+    public AssemblyLineServer(Kitchen kitchen) throws KitchenRequiredException {
+
+        if(kitchen == null){
+            throw new KitchenRequiredException();
+        }
+
         this.kitchen = kitchen;
         this.assemblyLines = new CopyOnWriteArrayList<>();
+        kitchen.setAssemblyLines(assemblyLines); // We do this to give the Kitchen visibility over what happens on the AssemblyLines
+
+        kitchen.start();
+
     }
 
-    public AssemblyLine getAssemblyLines(Integer index) {
+
+    public AssemblyLine getAssemblyLine(Integer index) {
         return assemblyLines.get(index);
     }
 
@@ -52,8 +60,10 @@ public class AssemblyLineServer {
         }
 
         // Kill all the Assembly lines, one by one!
-        this.assemblyLines.forEach(AssemblyLine::stop);
+        this.getAssemblyLines().forEach(AssemblyLine::stop);
 
+        //Kill the kitchen
+        this.getKitchen().stop();
     }
 
     /**
@@ -80,5 +90,21 @@ public class AssemblyLineServer {
      */
     public void printStatusAllAssemblyLines() {
         this.assemblyLines.forEach(AssemblyLine::printStatus); // We do not needed to use, neither implement "countCookedItems".
+    }
+
+    public Kitchen getKitchen() {
+        return kitchen;
+    }
+
+    public List<AssemblyLine> getAssemblyLines() {
+        return assemblyLines;
+    }
+
+    /**
+     * We kill the process in cold blood; losing state and data.
+     */
+    public void kill() {
+        assemblyLines.forEach(AssemblyLine::kill);
+        kitchen.kill();
     }
 }

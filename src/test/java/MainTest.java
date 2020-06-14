@@ -56,6 +56,10 @@ class MainTest {
             // Kill them all!
             Main.getAssemblyLineServer().setEndProgram(true); // TODO Implement a cascaded stop! this is too harsh as is!
 
+            // Wait a few seconds for the process to stop...
+            TimeUnit.SECONDS.sleep(5);
+            Main.getAssemblyLineServer().kill();
+
         } catch (InterruptedException e) {
             e.printStackTrace();
             assert(false);

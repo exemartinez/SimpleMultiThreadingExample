@@ -1,6 +1,7 @@
+import com.foodfactory.exceptions.KitchenRequiredException;
 import com.foodfactory.view.AssemblyLineServer;
 import com.foodfactory.builders.KitchenBuilder;
-import com.foodfactory.model.Kitchen;
+import com.foodfactory.controllers.Kitchen;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -30,10 +31,16 @@ public class Main {
         KitchenBuilder kitchenBuilder = KitchenBuilder.getInstance();
         Kitchen kitchen = kitchenBuilder.buildKitchenStructure();
 
-        assemblyLineServer = new AssemblyLineServer(kitchen);
+        try {
 
-        Executor executor = Executors.newSingleThreadExecutor();
-        executor.execute(()-> startAseemblyLineServer());
+            assemblyLineServer = new AssemblyLineServer(kitchen);
+
+            Executor executor = Executors.newSingleThreadExecutor();
+            executor.execute(()-> startAseemblyLineServer());
+
+        } catch (KitchenRequiredException e) {
+            e.printStackTrace();
+        }
 
     }
 

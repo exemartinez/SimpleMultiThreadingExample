@@ -1,9 +1,9 @@
 package com.foodfactory.builders;
 
-import com.foodfactory.model.Oven;
+import com.foodfactory.model.OvenImpl;
 
 /**
- * It is in charge of returning an "Oven" kind of object.
+ * It is in charge of returning an "OvenImpl" kind of object.
  * I do believe these objects could "evolve" during this development,
  * so I try to encapsulate and dettach the way in which we build them.
  */
@@ -19,7 +19,7 @@ public class OvenBuilder {
         return ovenBuilder;
     }
 
-    public Oven build(Integer size) {
-        return new Oven(size);
+    public OvenImpl build(Integer size) {
+        return new OvenImpl(size);
     }
 }

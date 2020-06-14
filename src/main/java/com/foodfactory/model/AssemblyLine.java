@@ -1,7 +1,7 @@
 package com.foodfactory.model;
 
-import java.util.Queue;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class AssemblyLine implements AssemblyLineStage {
@@ -16,13 +16,15 @@ public class AssemblyLine implements AssemblyLineStage {
     private static final int MIN_PRODUCTIVITY_DELAY = 0;
     private static final int MAX_PRODUCTIVITY_DELAY = 3;
 
-    ExecutorService executor = Executors.newSingleThreadExecutor();
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private final ConcurrentLinkedQueue<Product> waitingProducts = new ConcurrentLinkedQueue<>(); // IN queue
     private final ConcurrentLinkedQueue<Product> finishedProducts = new ConcurrentLinkedQueue<>(); // OUT queue
 
     private final Integer id;
+
     private AtomicInteger production = new AtomicInteger(0);
+    private AtomicBoolean stopProduction = new AtomicBoolean(false);
 
     public AssemblyLine (Integer id){
         this.id = id;
@@ -38,14 +40,16 @@ public class AssemblyLine implements AssemblyLineStage {
 
                 try {
 
-                    Integer productivityDelay = ThreadLocalRandom.current().nextInt(MIN_PRODUCTIVITY_DELAY, MAX_PRODUCTIVITY_DELAY);
-                    TimeUnit.SECONDS.sleep(PRODUCTION_TIME + productivityDelay);
-                    Product product = generateRandomProduct();
+                    if (!stopProduction.get()) {
+                        Integer productivityDelay = ThreadLocalRandom.current().nextInt(MIN_PRODUCTIVITY_DELAY, MAX_PRODUCTIVITY_DELAY);
+                        TimeUnit.SECONDS.sleep(PRODUCTION_TIME + productivityDelay);
+                        Product product = generateRandomProduct();
 
-                    addProduct(product);
+                        addProduct(product);
 
-                    //TODO Replace all the 'sysout' for proper loggers.
-                    System.out.println("Added product - size: " + product.size() + " cooking time: " + product.cookTime() + " to Assembly line: " + this.getId());
+                        //TODO Replace all the 'sysout' for proper loggers.
+                        System.out.println("Added product - size: " + product.size() + " cooking time: " + product.cookTime().getSeconds() + " to Assembly line: " + this.getId());
+                    }
 
                 } catch (InterruptedException e) {
                     //TODO: actionate in a proper way or use a flag to terminate the whole thread appropiately
@@ -74,7 +78,7 @@ public class AssemblyLine implements AssemblyLineStage {
         Food food = new Food(size, cookTime.longValue());
 
         // Adding tracking data
-        food.setAssemblyLine(this.getId());
+        food.setAssemblyLineId(this.getId());
         food.setOrderNumber(production.getAndIncrement());
 
         return food;
@@ -114,4 +118,25 @@ public class AssemblyLine implements AssemblyLineStage {
 
     }
 
+    /**
+     * Stops the production, but the thread continues.
+     */
+    public void haltProduction(){
+        stopProduction.set(true);
+    }
+
+    /**
+     * Wakes up the production.
+     */
+    public void continueProduction(){
+        stopProduction.set(false);
+    }
+
+    public boolean isHalted() {
+        return stopProduction.get();
+    }
+
+    public void kill() {
+        this.executor.shutdownNow();
+    }
 }

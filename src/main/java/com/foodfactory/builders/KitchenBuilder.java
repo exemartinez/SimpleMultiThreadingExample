@@ -1,6 +1,6 @@
 package com.foodfactory.builders;
 
-import com.foodfactory.model.Kitchen;
+import com.foodfactory.controllers.Kitchen;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -80,13 +80,13 @@ public class KitchenBuilder {
 
         //Old fashioned for; we do not want to overburden the setup with streaming or foreach 'pirotechnics'.
         for(int i = 0; i < ovensToBuild.length; i++){
-            kitchen.addOven(ovenBuilder.build(Integer.getInteger(ovensToBuild[i])));
+            kitchen.addOven(ovenBuilder.build(Integer.parseInt(ovensToBuild[i])));
         }
 
         for(int i = 0; i < storesToBuild.length; i++){
-            kitchen.addStore(storeBuilder.build(Integer.getInteger(storesToBuild[i])));
+            kitchen.addStore(storeBuilder.build(Integer.parseInt(storesToBuild[i])));
         }
 
-        return null;
+        return kitchen;
     }
 }

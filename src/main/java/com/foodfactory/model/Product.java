@@ -4,7 +4,7 @@ import java.time.Duration;
 
 /**
  * Implementations of this class should take care of overriding the necessary methods of the Object class to allow
- * for the use of Collections in the different implementations of Oven and Store.
+ * for the use of Collections in the different implementations of OvenImpl and StoreImpl.
  * This interface is not required to be implemented for this exercise.
  */
 public interface Product {

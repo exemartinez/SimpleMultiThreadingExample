@@ -1,18 +1,26 @@
 package com.foodfactory.model;
 
 /**
- * This holds the food, but doesn't cooks it.
+ * The store where to put the products if the oven is not avialable. This class is thread safe.
  */
-public class Store implements Holder{
+public interface Store {
 
-    private final Integer size; // we will not provide a getter & setter for this
+    /**
+     * Put a product in this store, if there is no space left in the store, it will block
+     * until enough space frees up. This operation will put the products in FIFO order
+     * @param product The Product to put in this StoreImpl
+     */
+    void put(Product product);
 
-    public Store(Integer size) {
-        this.size = size;
-    }
+    /**
+     * Take the next element that has to be processed respecting FIFO
+     * @return
+     */
+    Product take();
 
-    @Override
-    public Integer getSize() {
-        return size;
-    }
+    /**
+     * Take the specified Product from the StoreImpl
+     * @param product
+     */
+    void take(Product product);
 }

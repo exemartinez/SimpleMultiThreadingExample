@@ -11,7 +11,7 @@ public class Food implements Product {
     private final Integer size;
     private final Duration cookTime;
     private Integer orderNumber;
-    private Integer assemblyLine;
+    private Integer assemblyLineId;
 
     public Food(Integer size, Long cookTime){
         this.size = size;
@@ -36,11 +36,11 @@ public class Food implements Product {
         this.orderNumber = orderNumber;
     }
 
-    public Integer getAssemblyLine() {
-        return assemblyLine;
+    public Integer getAssemblyLineId() {
+        return assemblyLineId;
     }
 
-    public void setAssemblyLine(Integer assemblyLine) {
-        this.assemblyLine = assemblyLine;
+    public void setAssemblyLineId(Integer assemblyLineId) {
+        this.assemblyLineId = assemblyLineId;
     }
 }
