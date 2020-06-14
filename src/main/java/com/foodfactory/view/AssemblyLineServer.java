@@ -59,10 +59,10 @@ public class AssemblyLineServer {
             Thread.onSpinWait();
         }
 
-        // Kill all the Assembly lines, one by one!
+        // Stop all the Assembly lines, one by one!
         this.getAssemblyLines().forEach(AssemblyLine::stop);
 
-        //Kill the kitchen
+        //Stops the kitchen
         this.getKitchen().stop();
     }
 
@@ -89,7 +89,7 @@ public class AssemblyLineServer {
      * Elements in its "waiting" and "finished" lines.
      */
     public void printStatusAllAssemblyLines() {
-        this.assemblyLines.forEach(AssemblyLine::printStatus); // We do not needed to use, neither implement "countCookedItems".
+        this.assemblyLines.forEach(AssemblyLine::printStatus); // We do not needed to use, neither implement "countCookedItems" (see design docs).
     }
 
     public Kitchen getKitchen() {
@@ -106,5 +106,14 @@ public class AssemblyLineServer {
     public void kill() {
         assemblyLines.forEach(AssemblyLine::kill);
         kitchen.kill();
+    }
+
+    /**
+     * This prints in the standard output the products already processed
+     * and finished. We use this only in the context of this simulation.
+     * // TODO replace it with an appropiate way of logging.
+     */
+    public void printFinishedProductsInOrder() {
+        assemblyLines.forEach(AssemblyLine::printAllFinishedProductsInOrder);
     }
 }

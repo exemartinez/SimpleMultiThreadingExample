@@ -81,10 +81,12 @@ public class KitchenBuilder {
         //Old fashioned for; we do not want to overburden the setup with streaming or foreach 'pirotechnics'.
         for(int i = 0; i < ovensToBuild.length; i++){
             kitchen.addOven(ovenBuilder.build(Integer.parseInt(ovensToBuild[i])));
+            System.out.println("Added an OVEN of size: " + ovensToBuild[i] + " to the kitchen.");
         }
 
         for(int i = 0; i < storesToBuild.length; i++){
             kitchen.addStore(storeBuilder.build(Integer.parseInt(storesToBuild[i])));
+            System.out.println("Added a STORE of size: " + ovensToBuild[i] + " to the kitchen.");
         }
 
         return kitchen;

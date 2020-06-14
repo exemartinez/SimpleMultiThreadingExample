@@ -22,8 +22,8 @@ public class Cooker {
     private final List<Store> stores;
 
     private final Comparator<Product> orderNumberSorter = Comparator.comparing(product -> ((FACTOR_FOR_LANE_ID * ((Food)product).getAssemblyLineId()) + ((Food)product).getOrderNumber()));
-
     private final PriorityBlockingQueue<Product> cacheFinishedProducts = new PriorityBlockingQueue<>(CACHE_INITIAL_CAPACITY,orderNumberSorter);
+    
     private final List<Executor> timers = new CopyOnWriteArrayList<>();
 
     /**
@@ -43,6 +43,7 @@ public class Cooker {
     }
 
     public synchronized void turnOffAllOvens() {
+        timers.forEach(t -> ((ExecutorService)t).shutdownNow()); // Kills every cooking timer.
         ovens.forEach(Oven::turnOff);
     }
 
@@ -102,13 +103,14 @@ public class Cooker {
      * @return
      */
     private Boolean placeProductInOven(Product product) {
-        Executor timer = Executors.newSingleThreadExecutor();
+
         Boolean productPlacedInOven = true;
 
         // Trying to get the product into the Oven //TODO add functionality to test if the Oven is turned on or not.
         for (Oven oven: ovens) {
             try {
                 oven.put(product);
+                productPlacedInOven = true;
                 break;
             } catch (CapacityExceededException e) {
                 productPlacedInOven = false;
@@ -117,32 +119,41 @@ public class Cooker {
 
         // If the product was placed in an oven we start "cooking it", and place it in the cooker's "cache".
         if (productPlacedInOven){
-
-            timer.execute(()->{
-                try {
-
-                    System.out.println("COOKING product #: " + ((Food)product).getOrderNumber() + " from lane #: " + ((Food)product).getAssemblyLineId() + " - size: " + product.size() + " cooking time: " + product.cookTime().getSeconds());
-                    TimeUnit.SECONDS.sleep(product.cookTime().getSeconds());
-
-                    //Take the product from the oven.
-                    ovens.forEach(oven -> oven.take(product)); //The product object (with its object id) should be found in just one oven and erased.
-                    //Put it in a sorted cache for finished products. (another thread will pick it up)
-                    this.cacheFinishedProducts.add(product);
-
-                    System.out.println("FINISHED cooking product #: " + ((Food)product).getOrderNumber() + " from lane #: " + ((Food)product).getAssemblyLineId() + " - size: " + product.size() + " cooking time: " + product.cookTime().getSeconds());
-
-                    this.timers.remove(timer); // we take care of freeing the memory as well.
-
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            });
-
-            timers.add(timer); // we do this to avoid garbage collection of the thread!
-
+            startCookingTimer(product);
         }
 
         return productPlacedInOven;
+    }
+
+    /**
+     * Start a thread with a timer to hold on it; when it finishes, we take the product out of the oven.
+     * @param product
+     */
+    private void startCookingTimer(Product product) {
+
+        Executor timer = Executors.newSingleThreadExecutor();
+
+        timer.execute(()->{
+            try {
+
+                System.out.println("COOKING product #: " + ((Food)product).getOrderNumber() + " from lane #: " + ((Food)product).getAssemblyLineId() + " - size: " + product.size() + " cooking time: " + product.cookTime().getSeconds());
+                TimeUnit.SECONDS.sleep(product.cookTime().getSeconds());
+
+                //Take the product from the oven.
+                ovens.forEach(oven -> oven.take(product)); //The product object (with its object id) should be found in just one oven and erased.
+                //Put it in a sorted cache for finished products. (another thread will pick it up)
+                this.cacheFinishedProducts.add(product);
+
+                System.out.println("FINISHED cooking product #: " + ((Food)product).getOrderNumber() + " from lane #: " + ((Food)product).getAssemblyLineId() + " - size: " + product.size() + " cooking time: " + product.cookTime().getSeconds());
+
+                this.timers.remove(timer); // we take care of freeing the memory as well.
+
+            } catch (InterruptedException e) {
+                System.out.println("Cooking TIMER for product: "+ ((Food) product).getOrderNumber() + " of Assembly line: " + ((Food) product).getAssemblyLineId());
+            }
+        });
+
+        timers.add(timer); // we do this to avoid garbage collection of the thread!
     }
 
     /**

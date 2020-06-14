@@ -49,15 +49,16 @@ class MainTest {
             Main.getAssemblyLineServer().addAssemblyLine(); // Second Assembly Line
 
             // Allow it to run for a whole minute...
-            TimeUnit.SECONDS.sleep(60);
+            TimeUnit.SECONDS.sleep(60 * 3);
 
-            Main.getAssemblyLineServer().printStatusAllAssemblyLines();
-
-            // Kill them all!
+            // Stop them all!
             Main.getAssemblyLineServer().setEndProgram(true); // TODO Implement a cascaded stop! this is too harsh as is!
 
-            // Wait a few seconds for the process to stop...
-            TimeUnit.SECONDS.sleep(5);
+            Main.getAssemblyLineServer().printFinishedProductsInOrder();
+            Main.getAssemblyLineServer().printStatusAllAssemblyLines();
+
+            // Wait a few seconds for the process to stop, then kill it!
+            TimeUnit.SECONDS.sleep(30);
             Main.getAssemblyLineServer().kill();
 
         } catch (InterruptedException e) {

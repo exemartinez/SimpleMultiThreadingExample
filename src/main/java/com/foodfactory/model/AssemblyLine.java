@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class AssemblyLine implements AssemblyLineStage {
 
-    private static final long PRODUCTION_TIME = 3; // I like it every three seconds, a prime number takes the oddities out!
+    private static final long PRODUCTION_TIME = 3; // I like it every three seconds, a prime number takes the oddities to see some sunshine!
 
     // DISCLAIMER: These values do not represent REAL cooking times neither food product sizes (just intented for this simulation use).
     private static final int MIN_PRODUCT_SIZE = 10;
@@ -25,6 +25,7 @@ public class AssemblyLine implements AssemblyLineStage {
 
     private AtomicInteger production = new AtomicInteger(0);
     private AtomicBoolean stopProduction = new AtomicBoolean(false);
+    private Boolean continueLine = true;
 
     public AssemblyLine (Integer id){
         this.id = id;
@@ -36,7 +37,7 @@ public class AssemblyLine implements AssemblyLineStage {
     public void start() {
         executor.execute(()-> {
 
-            while(true){
+            while(continueLine){ // TODO replace this for a proper flag and method to stop the thread processing.
 
                 try {
 
@@ -49,6 +50,8 @@ public class AssemblyLine implements AssemblyLineStage {
 
                         //TODO Replace all the 'sysout' for proper loggers.
                         System.out.println("Added product - size: " + product.size() + " cooking time: " + product.cookTime().getSeconds() + " to Assembly line: " + this.getId());
+                    } else {
+                        System.out.println("Production STOPPED in Assembly line: " + this.getId());
                     }
 
                 } catch (InterruptedException e) {
@@ -98,10 +101,6 @@ public class AssemblyLine implements AssemblyLineStage {
         return this.waitingProducts.poll();
     }
 
-    public void stop(){
-        executor.shutdownNow(); //Brutal! we should use shoutdown and then ask the thread to take care of itself.
-    }
-
     /**
      * Prints the number of elements in each queue of the AssemblyLine.
      * This should go into a file, a DB or a log; not to the standard output.
@@ -137,6 +136,34 @@ public class AssemblyLine implements AssemblyLineStage {
     }
 
     public void kill() {
-        this.executor.shutdownNow();
+        this.executor.shutdownNow(); // This is extreme way to finish the program! no state is recorded.
+    }
+
+    public void stop() {
+        this.continueLine = false;
+    }
+
+    /**
+     * Used to checkout if the products are in order
+     *
+     */
+    public void printAllFinishedProductsInOrder() {
+
+        Product product = finishedProducts.poll();
+        Integer position  = 0;
+
+        System.out.println("***************************************************");
+        System.out.println("* FINISHED PRODUCTS LIST -  Assembly Line: " + this.getId());
+        System.out.println("***************************************************");
+
+        while (product != null){
+
+            System.out.println("Position: " + position + " product order: " + ((Food)product).getOrderNumber()) ;
+
+            position++;
+            product = finishedProducts.poll();
+
+        }
+
     }
 }
