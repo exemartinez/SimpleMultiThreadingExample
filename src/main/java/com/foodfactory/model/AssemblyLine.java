@@ -1,11 +1,13 @@
 package com.foodfactory.model;
 
+import java.util.Comparator;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class AssemblyLine implements AssemblyLineStage {
 
+    private static final int FINISHED_PRODUCTS_INITIAL_CAPACITY = 11; // A prime number for good luck. :)
     private static final long PRODUCTION_TIME = 3; // I like it every three seconds, a prime number takes the oddities to see some sunshine!
 
     // DISCLAIMER: These values do not represent REAL cooking times neither food product sizes (just intented for this simulation use).
@@ -19,7 +21,8 @@ public class AssemblyLine implements AssemblyLineStage {
     private ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private final ConcurrentLinkedQueue<Product> waitingProducts = new ConcurrentLinkedQueue<>(); // IN queue
-    private final ConcurrentLinkedQueue<Product> finishedProducts = new ConcurrentLinkedQueue<>(); // OUT queue
+    final Comparator<Product> orderNumberSorter = Comparator.comparing(product -> ((Food)product).getOrderNumber());
+    private final PriorityBlockingQueue<Product> finishedProducts = new PriorityBlockingQueue<>(FINISHED_PRODUCTS_INITIAL_CAPACITY,orderNumberSorter); // OUT queue
 
     private final Integer id;
 

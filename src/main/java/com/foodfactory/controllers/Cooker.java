@@ -16,14 +16,11 @@ import java.util.concurrent.*;
 public class Cooker {
 
     private static final int CACHE_INITIAL_CAPACITY = 11; // A prime number for good luck. :)
-    private static final Integer FACTOR_FOR_LANE_ID = 1000000; //We use this to form a unique identifier for a product in the cache that combines AssemblyLaneID + product.OrdenNumber.
 
     private final List<Oven> ovens;
     private final List<Store> stores;
-
-    private final Comparator<Product> orderNumberSorter = Comparator.comparing(product -> ((FACTOR_FOR_LANE_ID * ((Food)product).getAssemblyLineId()) + ((Food)product).getOrderNumber()));
-    private final PriorityBlockingQueue<Product> cacheFinishedProducts = new PriorityBlockingQueue<>(CACHE_INITIAL_CAPACITY,orderNumberSorter);
-    
+    private List<AssemblyLine> assemblyLines = null;
+    private final List<PriorityBlockingQueue<Product>> cacheFinishedAssemblyLine = new CopyOnWriteArrayList<PriorityBlockingQueue<Product>>();
     private final List<Executor> timers = new CopyOnWriteArrayList<>();
 
     /**
@@ -142,7 +139,7 @@ public class Cooker {
                 //Take the product from the oven.
                 ovens.forEach(oven -> oven.take(product)); //The product object (with its object id) should be found in just one oven and erased.
                 //Put it in a sorted cache for finished products. (another thread will pick it up)
-                this.cacheFinishedProducts.add(product);
+                addNextFinishedProductToAssemblyLine(((Food)product).getAssemblyLineId(), product);
 
                 System.out.println("FINISHED cooking product #: " + ((Food)product).getOrderNumber() + " from lane #: " + ((Food)product).getAssemblyLineId() + " - size: " + product.size() + " cooking time: " + product.cookTime().getSeconds());
 
@@ -159,7 +156,50 @@ public class Cooker {
     /**
      * returns the first available finished product, sorted.
      */
-    public Product getNextFinishedProducts() {
-        return cacheFinishedProducts.poll();
+    public Product getNextFinishedProducts(Integer idAssemblyLine) {
+
+        if (cacheFinishedAssemblyLine.size() > idAssemblyLine) { // We are doing this just to avoid an "IndexOutOfBounds" kind of exception at the beginning.
+            return cacheFinishedAssemblyLine.get(idAssemblyLine).poll();
+        }
+
+        return null;
+    }
+
+    /**
+     * Adds one more product to the cache, for its given AssemblyLine
+     */
+    private void addNextFinishedProductToCache(Integer idAssemblyLine, Product product) {
+        cacheFinishedAssemblyLine.get(idAssemblyLine).add(product);
+    }
+
+    /**
+     * Adds one more product to the cache, for its given AssemblyLine
+     */
+    private void addNextFinishedProductToAssemblyLine(Integer idAssemblyLine, Product product) {
+        this.assemblyLines.get(idAssemblyLine).putAfter(product);
+    }
+
+    /**
+     * Creates one more cache for the finished products.
+     * @param id
+     */
+    public void addOneMoreCache(Integer id) {
+        // I want them sorted by their Food "order number"
+        final Comparator<Product> orderNumberSorter = Comparator.comparing(product -> ((Food)product).getOrderNumber());
+        final PriorityBlockingQueue<Product> cacheFinishedProduct = new PriorityBlockingQueue<>(CACHE_INITIAL_CAPACITY,orderNumberSorter);
+
+        cacheFinishedAssemblyLine.add(cacheFinishedProduct);
+    }
+
+    public List<AssemblyLine> getAssemblyLines() {
+        return assemblyLines;
+    }
+
+    /**
+     * We assign the assemblies lines to have access to the finishedProducts sorted queue.
+     * @param assemblyLines
+     */
+    public void setAssemblyLines(List<AssemblyLine> assemblyLines) {
+        this.assemblyLines = assemblyLines;
     }
 }

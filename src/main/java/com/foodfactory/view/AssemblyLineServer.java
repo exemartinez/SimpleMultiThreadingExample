@@ -44,7 +44,10 @@ public class AssemblyLineServer {
     public void addAssemblyLine() {
         AssemblyLine newAssemblyLine = new AssemblyLine(this.assemblyLines.size());
         newAssemblyLine.start();
+
         this.assemblyLines.add(newAssemblyLine);
+        kitchen.addCacheToCooker(newAssemblyLine.getId());
+
     }
 
     /**

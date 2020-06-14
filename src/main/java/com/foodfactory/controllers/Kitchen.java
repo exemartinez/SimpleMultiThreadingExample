@@ -5,6 +5,7 @@ import com.foodfactory.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -41,6 +42,7 @@ public class Kitchen {
 
     public void setAssemblyLines(List<AssemblyLine> assemblyLines) {
         this.assemblyLines = assemblyLines;
+        this.cooker.setAssemblyLines(assemblyLines);
     }
 
     /**
@@ -50,8 +52,7 @@ public class Kitchen {
     public void start() {
 
         runCookingActivities();
-
-        runPickingProductActivities();
+        // runPickingProductActivities();
 
     }
 
@@ -61,12 +62,16 @@ public class Kitchen {
     private void runPickingProductActivities() {
         executorDispatcher.execute(()->{
             while(!endKitchen){
-                Product product = cooker.getNextFinishedProducts();
 
-                if (product != null) { // if there is any products in the sorted cache...
-                    assemblyLines.get(((Food) product).getAssemblyLineId()).putAfter(product);
+                for (AssemblyLine assemblyLine:assemblyLines) {
 
-                    System.out.println("DELIVERED product #: " + ((Food) product).getOrderNumber() + " from lane #: " + ((Food) product).getAssemblyLineId() + " - size: " + product.size() + " cooking time: " + product.cookTime().getSeconds());
+                    Product product = cooker.getNextFinishedProducts(assemblyLine.getId());
+
+                    if (product != null) { // if there is any products in the sorted cache...
+                        assemblyLine.putAfter(product);
+                        System.out.println("DELIVERED product #: " + ((Food) product).getOrderNumber() + " from lane #: " + ((Food) product).getAssemblyLineId() + " - size: " + product.size() + " cooking time: " + product.cookTime().getSeconds());
+                    }
+
                 }
             }
         });
@@ -161,4 +166,12 @@ public class Kitchen {
     }
 
 
+    /**
+     * Notifies the cooker that a new assembly line is online and it will need
+     * a new cache to sort some of the finiched elements.
+     * @param id
+     */
+    public void addCacheToCooker(Integer id) {
+        cooker.addOneMoreCache(id);
+    }
 }
