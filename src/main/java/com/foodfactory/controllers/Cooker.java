@@ -133,7 +133,7 @@ public class Cooker {
                 //Take the product from the oven.
                 ovens.forEach(oven -> oven.take(product)); //The product object (with its object id) should be found in just one oven and erased.
                 //Put it in an Assembly Line for finished products (thread safe sorted cache).
-                addNextFinishedProductToAssemblyLine(((Food)product).getAssemblyLineId(), product);
+                addNextFinishedProductToAssemblyLine(((Food)product).getAssemblyLineId(), product); // TODO: if we kill the main thread before this happens we might lose one product! fix this.
 
                 System.out.println("FINISHED cooking product #: " + ((Food)product).getOrderNumber() + " from lane #: " + ((Food)product).getAssemblyLineId() + " - size: " + product.size() + " cooking time: " + product.cookTime().getSeconds());
                 this.timers.remove(timer); // we take care of freeing the memory as well.
