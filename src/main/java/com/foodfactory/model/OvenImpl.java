@@ -4,6 +4,7 @@ import com.foodfactory.exceptions.CapacityExceededException;
 
 import java.time.Duration;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -12,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class OvenImpl implements Oven{
     private final Integer size; // TODO size was Double in the specification, refactor this.
     private final CopyOnWriteArrayList<Product> cookingProducts = new CopyOnWriteArrayList<>();
+    private AtomicBoolean on = new AtomicBoolean(false);
 
     public OvenImpl(Integer size) {
         this.size = size;
@@ -41,17 +43,17 @@ public class OvenImpl implements Oven{
 
     @Override
     public void turnOn() {
-
+        this.on.set(true);
     }
 
     @Override
     public void turnOn(Duration duration) {
-
+        // Not used.
     }
 
     @Override
     public void turnOff() {
-
+        this.on.set(false);
     }
 
 }

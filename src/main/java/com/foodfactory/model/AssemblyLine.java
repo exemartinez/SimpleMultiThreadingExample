@@ -5,6 +5,10 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Represents the implementation of an hypothetical "Food Products Assembly Line"
+ * that is about to be simulated.
+ */
 public class AssemblyLine implements AssemblyLineStage {
 
     private static final int FINISHED_PRODUCTS_INITIAL_CAPACITY = 11; // A prime number for good luck. :)
@@ -45,6 +49,7 @@ public class AssemblyLine implements AssemblyLineStage {
                 try {
 
                     if (!stopProduction.get()) {
+                        // We added a simulated productivity "delay"...just for fun.
                         Integer productivityDelay = ThreadLocalRandom.current().nextInt(MIN_PRODUCTIVITY_DELAY, MAX_PRODUCTIVITY_DELAY);
                         TimeUnit.SECONDS.sleep(PRODUCTION_TIME + productivityDelay);
                         Product product = generateRandomProduct();
@@ -61,13 +66,14 @@ public class AssemblyLine implements AssemblyLineStage {
                     //TODO: actionate in a proper way or use a flag to terminate the whole thread appropiately
                     e.printStackTrace();
                 }
-
             }
-
         });
-
     }
 
+    /**
+     * Adds the product to the "line" of products that need to be
+     * cooked by the Cooker on the multiple ovens.
+     */
     private synchronized void addProduct(Product product) {
         this.waitingProducts.add(product);
     }
@@ -75,7 +81,6 @@ public class AssemblyLine implements AssemblyLineStage {
     /**
      * I randomize the values that a new product might have, just before it enters the "input" line.
      * I tries with minimal and maximum values but, ideally, those must be out of some sort of "setup scheme".
-     * @return
      */
     private Product generateRandomProduct() {
         Integer size = ThreadLocalRandom.current().nextInt(MIN_PRODUCT_SIZE, MAX_PRODUCT_SIZE);
@@ -108,7 +113,6 @@ public class AssemblyLine implements AssemblyLineStage {
      * Prints the number of elements in each queue of the AssemblyLine.
      * This should go into a file, a DB or a log; not to the standard output.
      * However, for the intention of this exercise it will suffice.
-     *
      */
     public void printStatus() {
 
@@ -156,7 +160,7 @@ public class AssemblyLine implements AssemblyLineStage {
         Integer position  = 0;
 
         System.out.println("***************************************************");
-        System.out.println("* FINISHED PRODUCTS LIST -  Assembly Line: " + this.getId());
+        System.out.println(" FINISHED PRODUCTS LIST -  Assembly Line: " + this.getId());
         System.out.println("***************************************************");
 
         while (product != null){

@@ -3,7 +3,6 @@ package com.foodfactory.view;
 import com.foodfactory.exceptions.KitchenRequiredException;
 import com.foodfactory.model.AssemblyLine;
 import com.foodfactory.controllers.Kitchen;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,6 +13,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * For this implementation, we will use a unit test.
  * For future use, we will go for the implementation of
  * a REST api (Throught Spring MVC) or hearing in a socket directly.
+ *
+ * Its major aim is to build the kitchen, start it up.
+ * And hear for new assembly lines to appear, dynamically over an external source.
+ * Every need assembly line will generate its own products.
  */
 public class AssemblyLineServer {
 
@@ -22,6 +25,10 @@ public class AssemblyLineServer {
     private final Kitchen kitchen;
     private volatile boolean endProgram = false;
 
+    /**
+     * Defines the major controllers to operate the simulation.
+     * It starts the kitchen and defines the assembly lines.
+     */
     public AssemblyLineServer(Kitchen kitchen) throws KitchenRequiredException {
 
         if(kitchen == null){
@@ -30,15 +37,10 @@ public class AssemblyLineServer {
 
         this.kitchen = kitchen;
         this.assemblyLines = new CopyOnWriteArrayList<>();
-        kitchen.setAssemblyLines(assemblyLines); // We do this to give the Kitchen visibility over what happens on the AssemblyLines
+        kitchen.setAssemblyLines(assemblyLines); // We do this to give the Kitchen visibility over what happens on the AssemblyLines, at this time it will be EMPTY.
 
         kitchen.start();
 
-    }
-
-
-    public AssemblyLine getAssemblyLine(Integer index) {
-        return assemblyLines.get(index);
     }
 
     public void addAssemblyLine() {
@@ -46,8 +48,6 @@ public class AssemblyLineServer {
         newAssemblyLine.start();
 
         this.assemblyLines.add(newAssemblyLine);
-        kitchen.addCacheToCooker(newAssemblyLine.getId());
-
     }
 
     /**
@@ -114,9 +114,8 @@ public class AssemblyLineServer {
     /**
      * This prints in the standard output the products already processed
      * and finished. We use this only in the context of this simulation.
-     * // TODO replace it with an appropiate way of logging.
      */
     public void printFinishedProductsInOrder() {
-        assemblyLines.forEach(AssemblyLine::printAllFinishedProductsInOrder);
+        assemblyLines.forEach(AssemblyLine::printAllFinishedProductsInOrder); // TODO replace it with an appropiate way of logging.
     }
 }

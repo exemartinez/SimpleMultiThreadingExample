@@ -4,7 +4,7 @@ import com.foodfactory.model.StoreImpl;
 
 /**
  * We dettach the way we build the stores from the store itself. I do not know
- * if I may change the very nature of what a StoreImpl is later.
+ * if we may want to change the very nature of what a Store 'is' later.
  */
 public class StoreBuilder {
 

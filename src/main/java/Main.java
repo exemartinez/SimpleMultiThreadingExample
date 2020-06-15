@@ -33,10 +33,10 @@ public class Main {
 
         try {
 
-            assemblyLineServer = new AssemblyLineServer(kitchen);
+            assemblyLineServer = new AssemblyLineServer(kitchen); // This starts the Kitchen...
 
             Executor executor = Executors.newSingleThreadExecutor();
-            executor.execute(()-> startAseemblyLineServer());
+            executor.execute(()-> startAseemblyLineServer()); // This starts thw Assembly Lines simulated production.
 
         } catch (KitchenRequiredException e) {
             e.printStackTrace();
@@ -48,7 +48,6 @@ public class Main {
      * Starts a looping thread that heards for request from different assembly lines.
      */
     private static void startAseemblyLineServer() {
-
         assemblyLineServer.waitForNewAssemblyLines();
     }
 

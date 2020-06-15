@@ -69,7 +69,9 @@ public class KitchenBuilder {
     /**
      * Takes the due properties and builds up a kitchen as it's been requested in
      * the properties files.
-     * @return
+     *
+     * NOTE: we could have added more properties to configure all the constants in the whole system;
+     * we avoided this approach for simplicity.
      */
     public Kitchen buildKitchenStructure() {
 
@@ -78,7 +80,7 @@ public class KitchenBuilder {
         OvenBuilder ovenBuilder = OvenBuilder.getInstance();
         StoreBuilder storeBuilder = StoreBuilder.getInstance();
 
-        //Old fashioned for; we do not want to overburden the setup with streaming or foreach 'pirotechnics'.
+        //Old fashioned for; we do not want to overburden the setup with streaming or foreach 'pirotechnics' (yet).
         for(int i = 0; i < ovensToBuild.length; i++){
             kitchen.addOven(ovenBuilder.build(Integer.parseInt(ovensToBuild[i])));
             System.out.println("Added an OVEN of size: " + ovensToBuild[i] + " to the kitchen.");
